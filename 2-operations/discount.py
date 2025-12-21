@@ -19,4 +19,4 @@ def get_valid_float(prompt: str) -> float:
 price = get_valid_float("Введите цену товара")
 discount = get_valid_float("Введите процент скидки на товар")
 
-print(f"Стоимость вашего товара {price * (discount / 100)}")
+print(f"Стоимость вашего товара {price - (price * discount / 100)}")

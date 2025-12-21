@@ -26,4 +26,4 @@ transport = get_valid_float("Введите сколько вы потратил
 
 entertainment = get_valid_float("Введите сколько вы потратили на развлечение: ")
 
-print(f"Привет, твои общие траты {sum(food, transport, entertainment)}, твои средние траты {average_of_three(food, transport, entertainment)}")
+print(f"Привет, твои общие траты {sum([food, transport, entertainment])}, твои средние траты {average_of_three(food, transport, entertainment)}")
