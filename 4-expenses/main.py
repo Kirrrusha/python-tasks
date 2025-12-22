@@ -48,7 +48,7 @@ def parse_sum(text):
                     rub_amount = int(numbers[0])
                     kop_amount = int(numbers[1])
                 else:
-                    return "Некорректный формат суммы"
+                    return None
     
     # Проверка корректности копеек
     if kop_amount >= 100:
@@ -57,10 +57,55 @@ def parse_sum(text):
         kop_amount = kop_amount % 100
     
     if rub_amount is None:
-        return "Некорректный формат суммы"
+        return None
     
-    # Форматируем результат
-    return f"{rub_amount}.{kop_amount:02d}"
+    # Возвращаем числовое значение
+    return float(f"{rub_amount}.{kop_amount:02d}")
+
+def add_expense(expenses, value):
+    """Добавляет расход в список"""
+    expenses.append(value)
+    return expenses
+
+def delete_expense(expenses, index):
+    """Удаляет расход по индексу"""
+    if 0 <= index < len(expenses):
+        deleted_value = expenses.pop(index)
+        return True, deleted_value
+    return False, None
+
+def get_total(expenses):
+    """Возвращает общую сумму расходов"""
+    return sum(expenses)
+
+def get_average(expenses):
+    """Возвращает средний расход"""
+    if not expenses:
+        return 0
+    return sum(expenses) / len(expenses)
+
+def print_report(expenses):
+    """Печатает красивый отчёт"""
+    print("\n" + "="*50)
+    print("ОТЧЁТ ПО РАСХОДАМ".center(50))
+    print("="*50)
+    
+    if not expenses:
+        print("Нет данных о расходах".center(50))
+    else:
+        print(f"{'№':<5} {'Сумма, ₽':<15}")
+        print("-" * 50)
+        
+        total = 0
+        for i, expense in enumerate(expenses, 1):
+            print(f"{i:<5} {expense:>15.2f}")
+            total += expense
+        
+        print("-" * 50)
+        print(f"{'ИТОГО:':<20} {total:>15.2f} ₽")
+        print(f"{'СРЕДНИЙ РАСХОД:':<20} {get_average(expenses):>15.2f} ₽")
+    
+    print("="*50)
 
 def display_menu():
     """Отображает меню управления расходами"""
@@ -76,7 +121,6 @@ def display_menu():
 
 def main():
     expenses = []  # Список для хранения расходов
-    next_id = 1    # Счетчик для нумерации расходов
     
     while True:
         display_menu()
@@ -87,22 +131,14 @@ def main():
             if choice == "1":
                 # Добавить расход
                 print("\n--- Добавление расхода ---")
-                description = input("Введите описание расхода: ").strip()
                 amount_input = input("Введите сумму (например: '100 руб 50 коп'): ").strip()
                 
                 amount = parse_sum(amount_input)
-                if "Некорректный" in amount:
-                    print(f"Ошибка: {amount}")
+                if amount is None:
+                    print("Ошибка: некорректный формат суммы")
                 else:
-                    expense = {
-                        'id': next_id,
-                        'description': description,
-                        'amount': amount + " ₽",
-                        'amount_value': float(amount)  # сохраняем числовое значение для расчетов
-                    }
-                    expenses.append(expense)
-                    print(f"✓ Расход №{next_id} успешно добавлен: {description} - {amount} ₽")
-                    next_id += 1
+                    add_expense(expenses, amount)
+                    print(f"✓ Расход успешно добавлен: {amount:.2f} ₽")
                     
             elif choice == "2":
                 # Показать все расходы
@@ -110,8 +146,8 @@ def main():
                 if not expenses:
                     print("Список расходов пуст")
                 else:
-                    for expense in expenses:
-                        print(f"№{expense['id']}: {expense['description']} - {expense['amount']}")
+                    for i, expense in enumerate(expenses, 1):
+                        print(f"№{i}: {expense:.2f} ₽")
                         
             elif choice == "3":
                 # Показать сумму и средний расход
@@ -119,8 +155,8 @@ def main():
                 if not expenses:
                     print("Нет данных для расчета")
                 else:
-                    total = sum(expense['amount_value'] for expense in expenses)
-                    average = total / len(expenses)
+                    total = get_total(expenses)
+                    average = get_average(expenses)
                     print(f"Всего расходов: {len(expenses)}")
                     print(f"Общая сумма: {total:.2f} ₽")
                     print(f"Средний расход: {average:.2f} ₽")
@@ -131,30 +167,27 @@ def main():
                 if not expenses:
                     print("Список расходов пуст")
                 else:
-                    # Показываем текущие расходы
                     print("Текущие расходы:")
-                    for expense in expenses:
-                        print(f"№{expense['id']}: {expense['description']} - {expense['amount']}")
+                    for i, expense in enumerate(expenses, 1):
+                        print(f"№{i}: {expense:.2f} ₽")
                     
                     try:
-                        expense_id = int(input("\nВведите номер расхода для удаления: ").strip())
-                        # Ищем расход по ID
-                        found = False
-                        for i, expense in enumerate(expenses):
-                            if expense['id'] == expense_id:
-                                del expenses[i]
-                                print(f"✓ Расход №{expense_id} удален")
-                                found = True
-                                break
+                        expense_num = int(input("\nВведите номер расхода для удаления: ").strip())
+                        # Конвертируем номер в индекс (нумерация с 1)
+                        index = expense_num - 1
+                        success, deleted_value = delete_expense(expenses, index)
                         
-                        if not found:
-                            print(f"Расход с номером {expense_id} не найден")
+                        if success:
+                            print(f"✓ Расход №{expense_num} ({deleted_value:.2f} ₽) удален")
+                        else:
+                            print(f"Ошибка: расход с номером {expense_num} не найден")
                             
                     except ValueError:
                         print("Ошибка: введите корректный номер расхода")
                         
             elif choice == "5":
-                # Выход
+                # Показать финальный отчёт и выйти
+                print_report(expenses)
                 print("\nВыход из программы. До свидания!")
                 break
                 
