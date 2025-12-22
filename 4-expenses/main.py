@@ -60,9 +60,109 @@ def parse_sum(text):
         return "Некорректный формат суммы"
     
     # Форматируем результат
-    return f"{rub_amount}.{kop_amount:02d} ₽"
+    return f"{rub_amount}.{kop_amount:02d}"
 
-# Чтение ввода
-text_input = input()
-result = parse_sum(text_input)
-print(result)
+def display_menu():
+    """Отображает меню управления расходами"""
+    print("\n" + "="*40)
+    print("МЕНЮ УПРАВЛЕНИЯ РАСХОДАМИ")
+    print("="*40)
+    print("1. Добавить расход")
+    print("2. Показать все расходы")
+    print("3. Показать сумму и средний расход")
+    print("4. Удалить расход по номеру")
+    print("5. Выход")
+    print("="*40)
+
+def main():
+    expenses = []  # Список для хранения расходов
+    next_id = 1    # Счетчик для нумерации расходов
+    
+    while True:
+        display_menu()
+        
+        try:
+            choice = input("Выберите пункт меню (1-5): ").strip()
+            
+            if choice == "1":
+                # Добавить расход
+                print("\n--- Добавление расхода ---")
+                description = input("Введите описание расхода: ").strip()
+                amount_input = input("Введите сумму (например: '100 руб 50 коп'): ").strip()
+                
+                amount = parse_sum(amount_input)
+                if "Некорректный" in amount:
+                    print(f"Ошибка: {amount}")
+                else:
+                    expense = {
+                        'id': next_id,
+                        'description': description,
+                        'amount': amount + " ₽",
+                        'amount_value': float(amount)  # сохраняем числовое значение для расчетов
+                    }
+                    expenses.append(expense)
+                    print(f"✓ Расход №{next_id} успешно добавлен: {description} - {amount} ₽")
+                    next_id += 1
+                    
+            elif choice == "2":
+                # Показать все расходы
+                print("\n--- Все расходы ---")
+                if not expenses:
+                    print("Список расходов пуст")
+                else:
+                    for expense in expenses:
+                        print(f"№{expense['id']}: {expense['description']} - {expense['amount']}")
+                        
+            elif choice == "3":
+                # Показать сумму и средний расход
+                print("\n--- Сумма и средний расход ---")
+                if not expenses:
+                    print("Нет данных для расчета")
+                else:
+                    total = sum(expense['amount_value'] for expense in expenses)
+                    average = total / len(expenses)
+                    print(f"Всего расходов: {len(expenses)}")
+                    print(f"Общая сумма: {total:.2f} ₽")
+                    print(f"Средний расход: {average:.2f} ₽")
+                    
+            elif choice == "4":
+                # Удалить расход по номеру
+                print("\n--- Удаление расхода ---")
+                if not expenses:
+                    print("Список расходов пуст")
+                else:
+                    # Показываем текущие расходы
+                    print("Текущие расходы:")
+                    for expense in expenses:
+                        print(f"№{expense['id']}: {expense['description']} - {expense['amount']}")
+                    
+                    try:
+                        expense_id = int(input("\nВведите номер расхода для удаления: ").strip())
+                        # Ищем расход по ID
+                        found = False
+                        for i, expense in enumerate(expenses):
+                            if expense['id'] == expense_id:
+                                del expenses[i]
+                                print(f"✓ Расход №{expense_id} удален")
+                                found = True
+                                break
+                        
+                        if not found:
+                            print(f"Расход с номером {expense_id} не найден")
+                            
+                    except ValueError:
+                        print("Ошибка: введите корректный номер расхода")
+                        
+            elif choice == "5":
+                # Выход
+                print("\nВыход из программы. До свидания!")
+                break
+                
+            else:
+                print("Ошибка: выберите пункт от 1 до 5")
+                
+        except Exception as e:
+            print(f"Произошла ошибка: {e}")
+
+if __name__ == "__main__":
+    main()
