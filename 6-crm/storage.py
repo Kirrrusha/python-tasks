@@ -1,6 +1,7 @@
 # storage.py
 import json
 import os
+import sys 
 from typing import List
 
 # Путь к файлу хранения (можно вынести в конфиг или параметр)
